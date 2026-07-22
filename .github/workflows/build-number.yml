@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "build-number/**"
   pull_request:
     branches:
       - main
+    paths:
+      - "build-number/**"
   workflow_dispatch:
 
 jobs:
@@ -23,7 +27,7 @@ jobs:
 
       - name: Compute build version
         id: version
-        working-directory: app
+        working-directory: build-number/app
         run: |
           BASE_VERSION=$(node -p "require('./package.json').version")
           RUN_NUMBER="${GITHUB_RUN_NUMBER}"
@@ -36,7 +40,7 @@ jobs:
           echo "build_version=${BUILD_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Build app metadata
-        working-directory: app
+        working-directory: build-number/app
         env:
           APP_VERSION: ${{ steps.version.outputs.base_version }}
           RUN_NUMBER: ${{ steps.version.outputs.run_number }}

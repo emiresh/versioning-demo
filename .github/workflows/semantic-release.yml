@@ -4,9 +4,13 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - "semantic-release/**"
   push:
     branches:
       - main
+    paths:
+      - "semantic-release/**"
   workflow_dispatch:
 
 jobs:
@@ -25,11 +29,11 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: app
+        working-directory: semantic-release/app
         run: npm install
 
       - name: Dry run semantic-release
-        working-directory: app
+        working-directory: semantic-release/app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --dry-run
@@ -53,11 +57,11 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        working-directory: app
+        working-directory: semantic-release/app
         run: npm install
 
       - name: Run semantic-release
-        working-directory: app
+        working-directory: semantic-release/app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release

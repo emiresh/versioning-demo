@@ -28,7 +28,7 @@ jobs:
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
       - name: Build app metadata
-        working-directory: app
+        working-directory: git-tags/app
         env:
           APP_VERSION: ${{ steps.version.outputs.version }}
           GIT_TAG: ${{ steps.version.outputs.tag }}
@@ -41,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: git-tags-${{ steps.version.outputs.version }}
-          path: app/dist/version.json
+          path: git-tags/app/dist/version.json
