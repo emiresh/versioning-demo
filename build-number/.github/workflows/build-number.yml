@@ -1,0 +1,58 @@
+name: Build Number Versioning
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Compute build version
+        id: version
+        working-directory: app
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          RUN_NUMBER="${GITHUB_RUN_NUMBER}"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          BUILD_VERSION="${BASE_VERSION}-${RUN_NUMBER}+${SHORT_SHA}"
+
+          echo "base_version=${BASE_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "run_number=${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "build_version=${BUILD_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Build app metadata
+        working-directory: app
+        env:
+          APP_VERSION: ${{ steps.version.outputs.base_version }}
+          RUN_NUMBER: ${{ steps.version.outputs.run_number }}
+          GIT_SHA: ${{ steps.version.outputs.short_sha }}
+          BUILD_VERSION: ${{ steps.version.outputs.build_version }}
+        run: |
+          mkdir -p dist
+          node src/index.js > dist/version.json
+          cat dist/version.json
+
+      - name: Show Docker tag example
+        run: |
+          echo "my-app:${{ steps.version.outputs.build_version }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-number-${{ steps.version.outputs.build_version }}
+          path: build-number/app/dist/version.json

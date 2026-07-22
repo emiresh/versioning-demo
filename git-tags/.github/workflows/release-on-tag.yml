@@ -1,0 +1,44 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  build-from-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Read version from tag
+        id: version
+        run: |
+          echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+      - name: Build app metadata
+        working-directory: app
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+          GIT_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          mkdir -p dist
+          node src/index.js > dist/version.json
+          cat dist/version.json
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-tags-${{ steps.version.outputs.version }}
+          path: app/dist/version.json

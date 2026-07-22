@@ -1,0 +1,9 @@
+{
+  "name": "git-tags-demo-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple app for Git tag based versioning demo",
+  "scripts": {
+    "build": "mkdir -p dist && node src/index.js > dist/version.txt"
+  }
+}
